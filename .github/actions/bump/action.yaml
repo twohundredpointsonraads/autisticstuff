@@ -1,0 +1,31 @@
+name: bump
+author: plassstic
+description: bump
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - name: git
+      run: |
+        git config user.name "version-setter[bot]"
+        git config user.email "version-setter[bot]@users.noreply.github.com"
+      shell: bash
+    - name: get version from tag
+      env:
+        LIBVER: ${{ github.ref }}
+      run: |
+        LIBVER=${{ env.LIBVER }}
+        LIBVER=${LIBVER#refs/tags/v}
+        echo LIBVER=${LIBVER} >> $GITHUB_ENV
+      shell: bash
+    - name: install uv
+      uses: astral-sh/setup-uv@v6
+    - name: bump version in package according to tag
+      run: uv version ${{ env.LIBVER }}
+      shell: bash
+    - name: bump version on git
+      run: |
+        git add .
+        git commit -m "bump version to v${{ env.LIBVER }}"
+        git push
+      shell: bash

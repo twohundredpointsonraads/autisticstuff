@@ -1,8 +1,5 @@
 name: publish
 
-permissions:
-  id-token: write
-
 on:
   push:
     branches:
@@ -12,64 +9,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: install uv pacman
-        uses: astral-sh/setup-uv@v6
-      - name: sync dependencies
-        run: make sync
-      - name: build pkg
-        run: make build
-
   publish-test:
     needs: build-test
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/autisticstuff
+    permissions:
+      id-token: write
     steps:
-      - uses: actions/checkout@v5
-      - name: setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: install uv pacman
-        uses: astral-sh/setup-uv@v6
-      - name: sync
-        run: make sync
       - name: build pkg
-        run: make build
-      - name: testpypi publish
-        run: make publish-test
+        uses: ./.github/actions/build
+      - name: dl build
+        uses: actions/download-artifact@v5
+        with:
+          name: build-dist
+          path: dist/
+      - uses: actions/checkout@v5
+      - name: testpypi upl
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
 
   publish:
     needs: build-test
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/p/autisticstuff
     steps:
+      - name: bump ver
+        uses: ./.github/actions/bump
       - uses: actions/checkout@v5
-      - name: setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: install uv pacman
-        uses: astral-sh/setup-uv@v6
-      - name: sync
-        run: make sync
-      - name: get version from tag
-        env:
-          LIBVER: ${{ github.ref }}
-        run: |
-          LIBVER=${{ env.LIBVER }}
-          LIBVER=${LIBVER#refs/tags/v}
-          echo LIBVER=${LIBVER} >> $GITHUB_ENV
-      - name: bump version according to tag
-        run: uv version ${{ env.LIBVER }}
       - name: build pkg
-        run: make build
-      - name: pypi publish
-        run: make publish
+        uses: ./.github/actions/build
+      - name: dl build
+        uses: actions/download-artifact@v5
+        with:
+          name: build-dist
+          path: dist/
+      - name: pypi upl
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://upload.pypi.org/legacy/
