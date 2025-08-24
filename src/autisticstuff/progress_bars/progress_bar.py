@@ -4,17 +4,18 @@ import time
 from collections.abc import Iterable
 from typing import Any
 from sys import stdout
-from autisticstuff.progress_bars.utils import draw_circle
+from autisticstuff.progress_bars.utils import draw_circle, draw_fluid
 
 from autisticstuff.progress_bars.enums import Styles
+import re
 
 
 def progress_bar(
         iterable: int | Iterable[Any],
         max_length: int = None,
         title: str = "",
-        main_char: str = "|",
-        space_char: str = ".",
+        main_char: str = "█",
+        space_char: str = "░",
         size: int = 50,
         show_percentage: bool = True,
         show_count: bool = True,
@@ -34,7 +35,6 @@ def progress_bar(
         _progress_bar = "[" + main_char * num_bars + space_char * (size - num_bars) + "]"
         count_str = f" {idx}/{max_length}"
         custom_title = "Do something..."
-
         match style:
             case Styles.CLASSIC:
                 text = f"\r{title if title else custom_title} - {_progress_bar}{count_str if show_count else ''}"
@@ -42,14 +42,19 @@ def progress_bar(
                 cir = draw_circle(size, perc_complete, main_char, space_char,
                                   title=f"{percent_str if show_percentage else title}")
                 text = f"\r{cir}\n\n\r{title if show_percentage else ""}"
+            case Styles.FLUID:
+                cir = draw_fluid(size, perc_complete, main_char, space_char,
+                                 title=f"{percent_str if show_percentage else title}")
+                text = f"\r{cir}\n\n\r{title if show_percentage else ""}"
+
         yield text
     return None
 
 
 if __name__ == "__main__":
     # Example
-    for text in progress_bar(range(100), title="Do something...", show_percentage=True, size=10):
+    for text in progress_bar(range(100), title="Do something...", show_percentage=True, size=15, style=Styles.FLUID):
         stdout.write("\r" + text)
         stdout.flush()
-        time.sleep(0.04)
+        time.sleep(0.01)
     stdout.write("\n")

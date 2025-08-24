@@ -83,3 +83,37 @@ def draw_circle(
         result.append(line.rstrip())  # Remove trailing spaces for clean output
 
     return "\n\r".join(result)
+
+
+def draw_fluid(
+        size: int = 10,
+        percentage: int = 50,
+        filled_char: str = "█",
+        empty_char: str = "░",
+        title: str = None,
+):
+    result = []
+    center = size // 2
+    radius = size // 2 - 1
+    borders = 5
+    fill_height = (percentage / 100) * (radius * 2)
+    for y in range(size):
+        line = ""
+        for x in range(size):
+            dx = x - center
+            dy = y - center
+            distance = (dx ** 2 + dy ** 2) ** 0.5
+            if distance <= radius:
+                if abs(distance) > borders:
+                    line += filled_char * 2
+                    continue
+                height_from_bottom = (center + radius) - y
+                if height_from_bottom <= fill_height:
+                    line += filled_char * 2
+                else:
+                    line += empty_char * 2
+            else:
+                line += "  "
+        result.append(line.rstrip())
+
+    return "\n\r".join(result)
