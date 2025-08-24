@@ -4,10 +4,13 @@ version = "0.1.0a1"
 description = "Autistic stuff, either created by us, or stolen from someone on the internet"
 readme = "README.md"
 authors = [
-    { name = "plassstic", email = "schwartzalexey@yandex.com" }
+    { name = "plassstic", email = "schwartzalexey@yandex.com" },
+    { name = "amnesiawho", email = "ai28092005@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "uv-build>=0.8.13",
+]
 
 [build-system]
 requires = ["uv_build>=0.8.13,<0.9.0"]
