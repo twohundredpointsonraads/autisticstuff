@@ -4,7 +4,7 @@ import time
 from collections.abc import Iterable
 from typing import Any
 from sys import stdout
-from autisticstuff.progress_bars.utils import draw_circle_test
+from autisticstuff.progress_bars.utils import draw_circle
 
 from autisticstuff.progress_bars.enums import Styles
 
@@ -39,7 +39,7 @@ def progress_bar(
             case Styles.CLASSIC:
                 text = f"\r{title if title else custom_title} - {_progress_bar}{count_str if show_count else ''}"
             case Styles.CIRCLE:
-                cir = draw_circle_test(size, perc_complete, main_char, space_char,
+                cir = draw_circle(size, perc_complete, main_char, space_char,
                                        title=f"{percent_str if show_percentage else title}")
                 text = f"\r{cir}\n\n{title if show_percentage else ""}"
         yield text

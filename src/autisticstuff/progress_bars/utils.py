@@ -2,9 +2,12 @@
 
 from math import atan2, pi
 
-
 def draw_circle(
-    size: int = 10, percentage: int = 50, filled_char: str = "█", empty_char: str = "░"
+    size: int = 10,
+    percentage: int = 50,
+    filled_char: str = "█",
+    empty_char: str = "░",
+    title: str = None,
 ):
     """
     Draw a circle with given size and percentage.
@@ -12,43 +15,8 @@ def draw_circle(
     :param percentage: Percentage of circle.
     :param filled_char: Character used to fill circle.
     :param empty_char: Character used to fill circle.
+    :param title: Text displays under circle or on it
     """
-    result = []
-    center = size // 2
-    radius = size // 2 - 1
-
-    for y in range(int(size)):
-        line = ""
-        for x in range(size):
-            for _ in range(2):
-
-                distance = ((x - center) ** 2 + (y - center) ** 2) ** 0.5
-
-                if distance <= radius:
-
-                    angle = ((180 / pi) * (pi + atan2(y - center, x - center))) % 360
-
-                    fill_angle = (percentage / 100) * 360
-
-                    if angle <= fill_angle:
-                        line += filled_char
-                    else:
-                        line += empty_char
-                else:
-                    line += " "
-        result.append(line)
-
-    return "\n".join(result)
-
-
-def draw_circle_test(
-    size: int = 10,
-    percentage: int = 50,
-    filled_char: str = "█",
-    empty_char: str = "░",
-    title: str = None,
-):
-    """Рисует круговую диаграмму из символов"""
     result = []
     center = size // 2
     radius = size // 2 - 1
