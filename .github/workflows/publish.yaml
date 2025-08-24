@@ -1,0 +1,65 @@
+name: publish
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: make install
+      - name: Sync dependencies
+        run: make sync
+      - name: Build package
+        run: make build
+
+  publish-test:
+    needs: build-test
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: make install
+      - name: Publish to TestPyPI
+        run: make publish-test
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: install
+        run: make install
+      - name: sync
+        run: make sync
+      - name: get version from tag
+        env:
+          LIBVER: ${{ github.ref }}
+        run: |
+          LIBVER=${{ env.LIBVER }}
+          LIBVER=${LIBVER#refs/tags/v}
+          echo LIBVER=${LIBVER} >> $GITHUB_ENV
+      - name: bump version according to tag
+        run: uv version ${{ env.LIBVER }}
+      - name: Publish to PyPI
+        run: make publish
