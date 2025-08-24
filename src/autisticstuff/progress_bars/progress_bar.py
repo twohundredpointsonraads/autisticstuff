@@ -12,7 +12,7 @@ from autisticstuff.progress_bars.enums import Styles
 def progress_bar(
         iterable: int | Iterable[Any],
         max_length: int = None,
-        title: str | None = None,
+        title: str = "",
         main_char: str = "|",
         space_char: str = ".",
         size: int = 50,
@@ -40,8 +40,8 @@ def progress_bar(
                 text = f"\r{title if title else custom_title} - {_progress_bar}{count_str if show_count else ''}"
             case Styles.CIRCLE:
                 cir = draw_circle(size, perc_complete, main_char, space_char,
-                                       title=f"{percent_str if show_percentage else title}")
-                text = f"\r{cir}\n\n{title if show_percentage else ""}"
+                                  title=f"{percent_str if show_percentage else title}")
+                text = f"\r{cir}\n\n\r{title if show_percentage else ""}"
         yield text
     return None
 
