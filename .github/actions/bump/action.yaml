@@ -25,7 +25,8 @@ runs:
       shell: bash
     - name: bump version on git
       run: |
-        git add .
-        git commit -m "bump version to v${{ env.LIBVER }}"
-        git push
+        if git add .; then
+          git commit -m "bump version to v${{ env.LIBVER }}"
+          git push
+        fi
       shell: bash
