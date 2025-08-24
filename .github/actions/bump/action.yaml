@@ -25,8 +25,9 @@ runs:
       shell: bash
     - name: bump version on git
       run: |
-        if git add .; then
+        git add . || echo "No changes to add"
+        git diff --staged --quiet || {
           git commit -m "bump version to v${{ env.LIBVER }}"
           git push
-        fi
+        }
       shell: bash
