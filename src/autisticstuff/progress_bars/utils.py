@@ -1,10 +1,18 @@
+"""Model with basic utils for building progress bars"""
+
 from math import atan2, pi
 
 
 def draw_circle(
     size: int = 10, percentage: int = 50, filled_char: str = "█", empty_char: str = "░"
 ):
-    """Рисует круговую диаграмму из символов"""
+    """
+    Draw a circle with given size and percentage.
+    :param size: Size of circle.
+    :param percentage: Percentage of circle.
+    :param filled_char: Character used to fill circle.
+    :param empty_char: Character used to fill circle.
+    """
     result = []
     center = size // 2
     radius = size // 2 - 1
