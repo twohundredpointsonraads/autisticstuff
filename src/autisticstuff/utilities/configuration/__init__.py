@@ -14,7 +14,16 @@ from typing import Any
 __all__ = ["AppSettings", "SettingsField"]
 
 @dataclass(init=True, slots=True, frozen=True)
-class SettingsField[T]:
+class SettingsField[T: type]:
+	"""
+	SettingsField[T: type]
+	- Field wrapper for AppSettings
+
+	Attributes:
+		default: T = None,
+		factory: () -> T | str = None, - pass factory to generate value for the field, also can pass str - name of defined @property to fetch value from.
+		nullable: bool = True
+	"""
 	default: T = None
 	factory: Callable[[], T] | str = None
 	nullable: bool = True
@@ -22,6 +31,14 @@ class SettingsField[T]:
 
 @dataclass
 class AppSettings:
+	"""
+	AppSettings - base class for fetching safe type-checked environment
+
+	FIELD: type = SettingsField(default={T:-None}, factory={() -> T | str | None:-None}, nullable=True/False)
+
+
+
+	"""
 	__ALLOWED_TYPES: frozenset[type] = frozenset((int, float, complex, str, bool, NoneType))
 
 	@staticmethod
