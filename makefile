@@ -1,8 +1,5 @@
-install:
-	uv install
-
 sync:
-	uv lock && uv sync
+	uv lock && uv sync --frozen
 
 publish-test:
 	uv publish --index=testpypi --trusted-publishing=always

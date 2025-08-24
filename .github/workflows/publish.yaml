@@ -13,17 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Set up Python
+      - name: setup python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: install pacman
+      - name: install uv pacman
         uses: astral-sh/setup-uv@v6
-      - name: Install dependencies
-        run: make install
-      - name: Sync dependencies
+      - name: sync dependencies
         run: make sync
-      - name: Build package
+      - name: build pkg
         run: make build
 
   publish-test:
@@ -32,13 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: Install dependencies
-        run: make install
-      - name: Publish to TestPyPI
+      - name: install uv pacman
+        uses: astral-sh/setup-uv@v6
+      - name: publish to testpypi
         run: make publish-test
 
   publish:
@@ -46,14 +40,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: setup
+      - name: setup python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: install pacman
+      - name: install uv pacman
         uses: astral-sh/setup-uv@v6
-      - name: install
-        run: make install
       - name: sync
         run: make sync
       - name: get version from tag
@@ -65,5 +57,7 @@ jobs:
           echo LIBVER=${LIBVER} >> $GITHUB_ENV
       - name: bump version according to tag
         run: uv version ${{ env.LIBVER }}
+      - name: build pkg
+        run: make build
       - name: Publish to PyPI
         run: make publish
