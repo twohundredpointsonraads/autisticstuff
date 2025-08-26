@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from functools import lru_cache
-from _collections_abc import Callable
 
 
 def add_cached_handler_for_instance(instance: type[object], *args: object, **kwargs: object) -> Callable[[], object]:

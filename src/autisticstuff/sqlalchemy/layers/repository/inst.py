@@ -56,9 +56,9 @@ class _BaseRepository:
 			if not hasattr(self.mapping, key):
 				raise KeyError(f"model {self.mapping.__name__} has no attr {key}")
 
-			if not isinstance(obj_id, getattr(self.mapping, key)._T_co):
+			if not isinstance(obj_id, getattr(self.mapping, key).type.python_type):
 				raise TypeError(f"obj_id is not an instance of {key} col type")
-
+			
 			query = query.where(getattr(self.mapping, key) == obj_id)
 		else:
 			if not isinstance(obj_id, tuple) or len(obj_id) != len(key):

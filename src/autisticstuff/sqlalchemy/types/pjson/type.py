@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING, final, override
+from typing import final, override, TYPE_CHECKING
 
-import sqlalchemy as sa
 from pydantic import BaseModel
+import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
+
 
 if TYPE_CHECKING:
 	from typing import Any # noqa
@@ -18,9 +19,9 @@ class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
 	column, with support for PostgreSQL's JSONB type.
 
 	Attributes:
-	    pydantic_type (type[BaseModel]): The Pydantic model type to be used.
-	    postgres_use_jsonb (bool): Whether to use PostgreSQL's JSONB type
-	        instead of JSON. Defaults to True.
+		pydantic_type (type[BaseModel]): The Pydantic model type to be used.
+		postgres_use_jsonb (bool): Whether to use PostgreSQL's JSONB type
+			instead of JSON. Defaults to True.
 	"""
 	impl = sa.types.JSON
 
@@ -29,16 +30,16 @@ class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
 		Initialize the PydanticJSON type.
 
 		Args:
-		    pydantic_type (type[BaseModel]): The Pydantic model type to be used.
-		    postgres_use_jsonb (bool): Whether to use PostgreSQL's JSONB type.
-		        Defaults to True.
+			pydantic_type (type[BaseModel]): The Pydantic model type to be used.
+			postgres_use_jsonb (bool): Whether to use PostgreSQL's JSONB type.
+				Defaults to True.
 
 		Raises:
-		    TypeError: If the provided `pydantic_type` is not a subclass of `BaseModel`.
+			TypeError: If the provided `pydantic_type` is not a subclass of `BaseModel`.
 		"""
 		super().__init__()
-		if not isinstance(pydantic_type, BaseModel):
-			raise TypeError(f"{pydantic_type.__class__.__name__} is not a child instance of pydantic.BaseModel")
+		if not issubclass(pydantic_type, BaseModel):
+			raise TypeError(f"{pydantic_type.__name__} is not a subclass of `pydantic.BaseModel`")
 		self.pydantic_type = pydantic_type
 		self.postgres_use_jsonb = postgres_use_jsonb
 

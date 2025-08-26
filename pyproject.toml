@@ -14,7 +14,10 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "sqlalchemy[asyncio]>=2.0.43",
 ]
-optional-dependencies = { "dev" = [ "psycopg2[binary]>=2.9.10", "ruff>=0.12.10" ] }
+
+[project.optional-dependencies]
+dev = [ "psycopg2[binary]>=2.9.10", "ruff>=0.12.10" ]
+
     
 
 [build-system]
