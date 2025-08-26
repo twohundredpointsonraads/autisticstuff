@@ -100,7 +100,7 @@ def setup_interception_through_loguru(modules: dict[InterceptionPreset | tuple[s
 	"""
 	logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 	for module, lvl in modules.items():
-		_register_interception(logger_name=(module if isinstance(module, str) else module.value), level=lvl)
+		_register_interception(names=(module if isinstance(module, tuple) else module.value), level=lvl)
 
 
 def set_logger_factory_for_interception(factory: Callable[[str], logging.Logger | _logger.Logger]) -> None:
