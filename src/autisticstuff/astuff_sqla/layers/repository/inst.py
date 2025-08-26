@@ -1,6 +1,4 @@
-from _collections_abc import Coroutine, Iterable
-import importlib
-import threading
+from collections.abc import Coroutine, Iterable
 from typing import Any
 import uuid
 
@@ -14,29 +12,6 @@ from autisticstuff.astuff_sqla.utilities.validate import validate_kwargs_for_mod
 from ..mapping.inst import _BaseMapping
 
 
-class _LazyMapping:
-	"""Descriptor that imports and caches the mapping on first access."""
-
-	def __init__(self, _module: str, _name: str) -> None:
-		self._module = _module
-		self._class_name = _name
-		self._resolved = None
-		self._lock = threading.Lock()
-
-	def __get__(self, instance, owner) -> Any:
-		if self._resolved is not None:
-			return self._resolved
-		with self._lock:
-			if self._resolved is None:
-				try:
-					mod = importlib.import_module(self._module)
-					self._resolved = getattr(mod, self._class_name)
-					owner.mapping = self._resolved
-				except Exception as e:
-					raise ImportError(f"Could not import mapping '{self._class_name}' from '{self._module}'.") from e
-		return self._resolved
-
-
 class _BaseRepository:
 	"""Base repository class providing common database operations.
 
@@ -46,17 +21,36 @@ class _BaseRepository:
 	Attributes:
 		mapping: The SQLAlchemy model class this repository operates on
 		session: The async database session
+
+	Note:
+		You can add autoimport via mixin declared in your own project:
+
+	>>> class AutoimportMixin:
+	...     def __init_subclass__(cls) -> None:
+	...         cls.mapping = getattr(
+	...             __import__(
+	...                 name="local_module",
+	...                 fromlist=[_model := cls.__class__.__name__.replace("Repository", "*your mapping suffix*")],
+	...             ),
+	...             _model,
+	...         )
+	>>> class BaseRepository(_BaseRepository, AutoImportMixin):
+	...     pass
+
 	"""
 
 	mapping: _BaseMapping
 
-	def __init__(self, session: AsyncSession) -> None:
+	def __init__(self, session: AsyncSession, mapping: _BaseMapping) -> None:
 		"""Initialize the repository with a database session.
 
 		Args:
 			session: SQLAlchemy async session for database operations
+			mapping: Mapping to which repository should refer if it is not defined
 		"""
 		self.session = session
+		if self.__class__.mapping is None and mapping is not None:
+			self.__class__.mapping = mapping
 
 	async def get_by_pk(
 		self,
@@ -198,53 +192,3 @@ class _BaseRepository:
 			result = result.unique()
 
 		return result.all()
-
-
-def get_base_repository(
-	autoimport_mapping: bool = False,
-	from_module: str | None = None,
-	by_name_replace: tuple[str, str] = ("Repository", "Mapping"),
-) -> type[_BaseRepository]:
-	"""Factory function to create a base repository class with optional auto-import functionality.
-
-	This factory allows you to create repository base classes that can automatically
-	import their corresponding model mappings based on naming conventions.
-
-	Args:
-		autoimport_mapping: Whether to enable auto-import of the mapping. Defaults to False.
-		from_module: The module to import the mapping from. Required if autoimport_mapping is True.
-		by_name_replace: A tuple specifying the replacement pattern for class names if autoimport_mapping is True.
-			Defaults to ("Repository", "Mapping").
-
-	Returns:
-		type: The base repository class configured with the specified options.
-
-	Raises:
-		ImportError: If autoimport_mapping is True but the mapping cannot be imported
-
-	Warnings:
-		If autoimport_mapping is set to True, from_module becomes a required argument.
-		Otherwise, you should declare cls.mapping for every child repository manually.
-
-	Examples:
-		>>> # Manual mapping assignment
-		>>> BaseRepo = get_base_repository()
-		>>> class UserRepository(BaseRepo):
-		...     mapping = User
-
-		>>> # Auto-import mapping
-		>>> BaseRepo = get_base_repository(autoimport_mapping=True, from_module="myapp.models")
-		>>> class UserRepository(BaseRepo):  # Will auto-import UserMapping
-		...     pass
-	"""
-	if autoimport_mapping and from_module:
-
-		class _BaseRepo(_BaseRepository):
-			def __init_subclass__(cls) -> None:
-				_name = cls.__name__.replace(*by_name_replace)
-				if getattr(cls, "mapping", None) is None:
-					cls.mapping = _LazyMapping(_module=from_module, _name=_name)
-
-		return _BaseRepo
-
-	return _BaseRepository

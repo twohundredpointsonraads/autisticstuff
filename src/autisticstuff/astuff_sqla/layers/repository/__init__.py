@@ -1,3 +1,4 @@
-from .inst import get_base_repository
+from .inst import _BaseRepository
 
-__all__ = ["get_base_repository"]
+
+__all__ = ["_BaseRepository"]
