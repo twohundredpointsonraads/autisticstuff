@@ -45,8 +45,8 @@ jobs:
       - name: bump ver
         uses: ./.github/actions/bump
         with:
-          app_id: ${{ vars.APP_ID }}
-          private_key: ${{ secrets.PRIVATE_KEY }}
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
       - uses: actions/checkout@v5
       - name: build pkg
         uses: ./.github/actions/build
