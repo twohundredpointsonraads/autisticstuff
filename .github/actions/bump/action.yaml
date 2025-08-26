@@ -5,10 +5,12 @@ runs:
   using: composite
   steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: git
       run: |
-        git config user.name "version-setter[bot]"
-        git config user.email "version-setter[bot]@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       shell: bash
     - name: get version from tag
       env:
@@ -28,6 +30,11 @@ runs:
         git add . || echo "No changes to add"
         git diff --staged --quiet || {
           git commit -m "bump version to v${{ env.LIBVER }}"
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:refs/tags/v${{ env.LIBVER }} || echo "Failed to update tag"
+          git fetch origin main
+          git checkout -b temp-branch
+          git checkout main
+          git cherry-pick temp-branch
+          git push origin main
         }
       shell: bash
