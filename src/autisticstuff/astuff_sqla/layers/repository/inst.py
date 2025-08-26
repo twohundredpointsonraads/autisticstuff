@@ -1,4 +1,6 @@
 from _collections_abc import Coroutine, Iterable
+import importlib
+import threading
 from typing import Any
 import uuid
 
@@ -10,6 +12,29 @@ from sqlalchemy.orm import InstrumentedAttribute, selectinload
 from autisticstuff.astuff_sqla.utilities.validate import validate_kwargs_for_model
 
 from ..mapping.inst import _BaseMapping
+
+
+class _LazyMapping:
+	"""Descriptor that imports and caches the mapping on first access."""
+
+	def __init__(self, _module: str, _name: str) -> None:
+		self._module = _module
+		self._class_name = _name
+		self._resolved = None
+		self._lock = threading.Lock()
+
+	def __get__(self, instance, owner) -> Any:
+		if self._resolved is not None:
+			return self._resolved
+		with self._lock:
+			if self._resolved is None:
+				try:
+					mod = importlib.import_module(self._module)
+					self._resolved = getattr(mod, self._class_name)
+					owner.mapping = self._resolved
+				except Exception as e:
+					raise ImportError(f"Could not import mapping '{self._class_name}' from '{self._module}'.") from e
+		return self._resolved
 
 
 class _BaseRepository:
@@ -179,7 +204,7 @@ def get_base_repository(
 	autoimport_mapping: bool = False,
 	from_module: str | None = None,
 	by_name_replace: tuple[str, str] = ("Repository", "Mapping"),
-) -> _BaseRepository:
+) -> type[_BaseRepository]:
 	"""Factory function to create a base repository class with optional auto-import functionality.
 
 	This factory allows you to create repository base classes that can automatically
@@ -216,13 +241,9 @@ def get_base_repository(
 
 		class _BaseRepo(_BaseRepository):
 			def __init_subclass__(cls) -> None:
-				cls.mapping = getattr(
-					__import__(
-						name=from_module,
-						fromlist=[_model := cls.__class__.__name__.replace(*by_name_replace)],
-					),
-					_model,
-				)
+				_name = cls.__name__.replace(*by_name_replace)
+				if getattr(cls, "mapping", None) is None:
+					cls.mapping = _LazyMapping(_module=from_module, _name=_name)
 
 		return _BaseRepo
 
