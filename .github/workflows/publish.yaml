@@ -36,15 +36,16 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       id-token: write
     environment:
       name: pypi
       url: https://pypi.org/p/autisticstuff
     steps:
-      - uses: actions/checkout@v5
       - name: bump ver
         uses: ./.github/actions/bump
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
       - uses: actions/checkout@v5
       - name: build pkg
         uses: ./.github/actions/build
