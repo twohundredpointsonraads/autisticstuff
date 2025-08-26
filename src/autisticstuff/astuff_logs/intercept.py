@@ -3,8 +3,7 @@ from enum import Enum, IntEnum
 import logging
 import sys
 
-import loguru
-from loguru import logger
+from loguru import _logger, logger
 
 from .factory import get_logger
 
@@ -16,14 +15,14 @@ class InterceptHandler(logging.Handler):
 	file, line and function, and it maps stdlib levels to loguru levels.
 	"""
 
-	def _logger_factory(self, name: str | None = None) -> logging.Logger | loguru.Logger:
+	def _logger_factory(self, name: str | None = None) -> logging.Logger | _logger.Logger:
 		"""Return the target logger instance used to emit the message.
 
 		Args:
 			name: Logger name from the stdlib record.
 
 		Returns:
-			logging.Logger | loguru.Logger: A logger to forward the record to.
+			logging.Logger | _logger.Logger: A logger to forward the record to.
 		"""
 		return get_logger(name)
 
@@ -104,7 +103,7 @@ def setup_interception_through_loguru(modules: dict[InterceptionPreset | tuple[s
 		_register_interception(logger_name=(module if isinstance(module, str) else module.value), level=lvl)
 
 
-def set_logger_factory_for_interception(factory: Callable[[str], logging.Logger | loguru.Logger]) -> None:
+def set_logger_factory_for_interception(factory: Callable[[str], logging.Logger | _logger.Logger]) -> None:
 	"""Override the logger factory used by InterceptHandler.
 
 	Use this to customize how the target logger is created per record name

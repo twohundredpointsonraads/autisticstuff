@@ -5,8 +5,8 @@ from sys import stdout
 import time
 from typing import Any
 
-from autisticstuff.progress_bars.enums import Styles
-from autisticstuff.progress_bars.utils import draw_circle, draw_fluid
+from autisticstuff.astuff_progbars.enums import Styles
+from autisticstuff.astuff_progbars.utils import draw_circle, draw_fluid
 
 
 def progress_bar(

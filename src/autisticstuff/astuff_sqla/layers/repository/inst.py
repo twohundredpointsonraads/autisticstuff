@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, selectinload
 
-from autisticstuff.sqlalchemy.utilities.validate import validate_kwargs_for_model
+from autisticstuff.astuff_sqla.utilities.validate import validate_kwargs_for_model
 
 from ..mapping.inst import _BaseMapping
 
