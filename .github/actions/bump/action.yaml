@@ -28,6 +28,6 @@ runs:
         git add . || echo "No changes to add"
         git diff --staged --quiet || {
           git commit -m "bump version to v${{ env.LIBVER }}"
-          git push
+          git push origin HEAD:${{ github.ref }}
         }
       shell: bash
