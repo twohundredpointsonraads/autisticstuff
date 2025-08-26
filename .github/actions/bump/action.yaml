@@ -1,18 +1,17 @@
 name: bump
 author: plassstic
 description: bump
+
 runs:
   using: composite
   steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ github.token }}
     - name: git
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global url."https://x-access-token:${{ github.token }}@github.com/".insteadOf "https://github.com/"
       shell: bash
     - name: get version from tag
       env:
@@ -31,13 +30,12 @@ runs:
       run: |
         git add . || echo "No changes to add"
         git diff --staged --quiet || {
-          git commit -m "bump version to v${{ env.LIBVER }}"
-          REPO_URL="https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git"
-          git push "$REPO_URL" HEAD:refs/tags/v${{ env.LIBVER }} || echo "Failed to update tag"
-          git fetch "$REPO_URL" main
+          git commit -m "v${{ env.LIBVER }}"
+          git push origin HEAD:refs/tags/v${{ env.LIBVER }} || echo "Failed to update tag"
+          git fetch origin main
           git checkout -b temp-branch
           git checkout main
           git cherry-pick temp-branch
-          git push "$REPO_URL" main
+          git push origin main
         }
       shell: bash
