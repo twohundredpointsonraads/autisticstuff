@@ -23,7 +23,7 @@ class InterceptHandler(logging.Handler):
 			name: Logger name from the stdlib record.
 
 		Returns:
-		 logging.Logger | loguru.Logger: A logger to forward the record to.
+			logging.Logger | loguru.Logger: A logger to forward the record to.
 		"""
 		return get_logger(name)
 
@@ -116,7 +116,7 @@ def set_logger_factory_for_interception(factory: Callable[[str], logging.Logger 
 	Raises:
 		TypeError: If the provided factory is not callable with the expected signature.
 	"""
-	if not isinstance(factory, Callable[[str | None], loguru.Logger | logging.Logger]):
-		raise TypeError(f"factory should be a callable[[str|none], Logger (logging, loguru)], not {type(factory)}")
+	if not callable(factory):
+		raise TypeError(f"factory should be callable, not {type(factory)}")
 
 	InterceptHandler._logger_factory = factory
