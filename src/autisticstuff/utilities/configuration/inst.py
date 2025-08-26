@@ -14,15 +14,18 @@ import loguru
 
 @dataclass(init=True, slots=True, frozen=True)
 class SettingsField[T: type]:
-	"""
-	SettingsField[T: type]
-	- Field wrapper for AppSettings
+	"""Typed field declaration for AppSettings.
+
+	Type parameter:
+		T: Python type of the value.
 
 	Attributes:
-		default: T = None,
-		factory: () -> T | str = None, - pass factory to generate value for the field, also can pass str - name of defined @property to fetch value from.
-		nullable: bool = True
+		default: Optional fallback value when the variable is missing.
+		factory: A callable returning a value, or a name of a @property on the class
+			that will be evaluated after initialization.
+		nullable: Whether None is allowed when no value is provided and no default/factory is set.
 	"""
+
 	default: T = None
 	factory: Callable[[], T] | str = None
 	nullable: bool = True
@@ -30,19 +33,29 @@ class SettingsField[T: type]:
 
 @dataclass
 class AppSettings:
-	"""
-	AppSettings - base class for fetching safe type-checked environment
+	"""Base class for reading typed settings from environment variables.
 
-	_EXAMPLE_FIELD: type = SettingsField(default={T:-None}, factory={() -> T | str | None:-None}, nullable=True/False)
+	Declare attributes with type annotations and assign SettingsField(...) to each.
+	On initialization, values are resolved from the environment (loading .env if provided),
+	then from default/factory, or set to None if nullable.
+
+	Notes:
+		- Only immutable primitive types are allowed: int, float, complex, str, bool, None.
+		- If explicit_format is True, attribute names must be UPPER_SNAKE_CASE.
 
 	Example:
-		>>> from autisticstuff.utility.config import AppSettings, SettingsField
 		>>> class MySettings(AppSettings):
-		...		BOT_TOKEN: str = SettingsField(nullable=False)
-		...		POSTGRES_USER: str = SettingsField(default='pguser')
-		...		POSTGRES_PASSWORD: str = SettingsField(nullable=False, factory=lambda: secrets.rand_urlsafe(8))
+		...     BOT_TOKEN: str = SettingsField(nullable=False)
+		...     POSTGRES_USER: str = SettingsField(default="pguser")
+		...     POSTGRES_PASSWORD: str = SettingsField(nullable=False, factory=secrets.rand_urlsafe(8))
+		...     SECRET_ALIAS: str = SettingsField(factory="secret")
+		...
+		...     @property
+		...     def secret(self) -> str:
+		...         return "computed"
 		>>> settings = MySettings()
 	"""
+
 	__ALLOWED_TYPES: frozenset[type] = frozenset((int, float, complex, str, bool, NoneType))
 
 	@staticmethod
@@ -51,14 +64,23 @@ class AppSettings:
 			return "true" in _var.lower()
 		return _type(_var)
 
-	def __init__(self, dotenv_path: str | PathLike[str] | None = None, logger: logging.Logger | loguru.Logger | None = None, explicit_format: bool = True) -> None:
-		"""
-		Initialize AppSettings object
+	def __init__(
+		self,
+		dotenv_path: str | PathLike[str] | None = None,
+		logger: logging.Logger | loguru.Logger | None = None,
+		explicit_format: bool = True,
+	) -> None:
+		"""Initialize AppSettings and resolve annotated fields.
 
 		Args:
-			dotenv_path (str | PathLike[str] | None) = None: when None, search recursively for .env
-			logger (logging.Logger | loguru.Logger | None) = None: when None, defaults to loguru.Logger
-			explicit_format (bool) = True: if True, all variables should be named with only capital letters and underscores
+			dotenv_path: Optional path to a .env file. If None, python-dotenv searches recursively.
+			logger: Optional logging or loguru logger. Defaults to loguru.logger if not provided.
+			explicit_format: If True, attribute names must be uppercase with underscores.
+
+		Raises:
+			AttributeError: If an attribute name violates explicit_format constraint or a declared property is missing.
+			TypeError: If an annotation uses a disallowed (mutable) type or a factory reference is not a property.
+			ValueError: If a required field (nullable=False, no default/factory) is missing in the environment.
 		"""
 		load_dotenv(dotenv_path=dotenv_path)
 		self._logger: loguru.Logger = loguru.logger if logger is None else logger
@@ -74,7 +96,11 @@ class AppSettings:
 
 			_settings_field: SettingsField = _settings_fields[_attribute]
 			_annotated_type: type = _annotations[_attribute]
-			if _annotated_type not in self.__ALLOWED_TYPES and isinstance(_annotated_type, UnionType) and not all(_type in self.__ALLOWED_TYPES for _type in _annotated_type.__args__):
+			if (
+				_annotated_type not in self.__ALLOWED_TYPES
+				and isinstance(_annotated_type, UnionType)
+				and not all(_type in self.__ALLOWED_TYPES for _type in _annotated_type.__args__)
+			):
 				raise TypeError(f"{_annotated_type} is not allowed for annotations as it is mutable")
 			_string_value: str | None = getenv(_attribute, None)
 
@@ -97,15 +123,14 @@ class AppSettings:
 					continue
 				raise ValueError(f"Required field {_attribute} was not found in .env")
 
-			_value: _annotated_type = self._evaluate_var(_annotated_type, _string_value) # type: ignore
+			_value: _annotated_type = self._evaluate_var(_annotated_type, _string_value)  # type: ignore
 			self._logger.info(f"Successfully evaluated {_attribute}={_value}")
 			setattr(self, _attribute, _value)
 
 		self.__init_factory_defined(_attribute_map=_attribute_map)
 
-
 	def __init_factory_defined(self, _attribute_map: list[tuple[str, str]]):
-		for (_attribute, _property) in _attribute_map:
+		for _attribute, _property in _attribute_map:
 			if _property not in self.__class__.__dict__:
 				raise AttributeError(f"Property {_property} was not found in {self.__class__.__name__}")
 			if not isinstance(getattr(self.__class__, _property), property):

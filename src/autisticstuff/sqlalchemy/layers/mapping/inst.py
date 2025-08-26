@@ -9,29 +9,26 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class _BaseMapping(DeclarativeBase):
-	"""
-	Base SQLAlchemy mapping class with common functionality.
+	"""Base SQLAlchemy mapping class with common functionality.
 
 	This abstract base class provides standard fields and methods that are
 	commonly needed across database models including audit timestamps,
 	soft delete functionality, and utility methods for serialization.
 
 	Attributes:
-		created_at: Timestamp when the record was created (auto-managed)
-		updated_at: Timestamp when the record was last updated (auto-managed)
+		created_at: Timestamp when the record was created (set by DBMS)
+		updated_at: Timestamp when the record was last updated (set by DBMS)
 		is_active: Boolean flag for soft delete functionality
 	"""
+
 	__abstract__ = True
 
 	created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-	updated_at: Mapped[datetime] = mapped_column(
-		server_default=func.now(), onupdate=func.now()
-	)
+	updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 	is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
 
 	def to_dict(self, **kw) -> dict[str, Any]:
-		"""
-		Convert the model instance to a dictionary representation.
+		"""Convert the model instance to a dictionary representation.
 
 		This method serializes all table columns to a dictionary, with optional
 		additional key-value pairs that can be merged in.
@@ -48,8 +45,7 @@ class _BaseMapping(DeclarativeBase):
 		return result
 
 	def is_loaded(self, key: str):
-		"""
-		Check if a specific attribute/relationship has been loaded from the database.
+		"""Check if a specific attribute/relationship has been loaded from the database.
 
 		This method is useful for determining whether accessing an attribute will
 		trigger a lazy load operation or if the data is already available in memory.
@@ -78,8 +74,7 @@ class _BaseMapping(DeclarativeBase):
 
 
 def get_base_mapping(_mixins: Iterable[object], _metadata: MetaData = None) -> type[_BaseMapping]:
-	"""
-	Factory function to create a base mapping class with custom mixins and metadata.
+	"""Factory function to create a base mapping class with custom mixins and metadata.
 
 	This factory allows you to create customized base mapping classes by combining
 	the standard _BaseMapping functionality with additional mixins and custom metadata.
@@ -105,7 +100,7 @@ def get_base_mapping(_mixins: Iterable[object], _metadata: MetaData = None) -> t
 		>>> BaseMapping = get_base_mapping([TimestampMixin, SoftDeleteMixin])
 		>>>
 		>>> class User(BaseMapping):
-		...     __tablename__ = 'users'
+		...     __tablename__ = "users"
 		...     id: Mapped[int] = mapped_column(primary_key=True)
 		...     name: Mapped[str]
 

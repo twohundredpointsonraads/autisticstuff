@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 from sqlalchemy import inspect
 from sqlalchemy.orm import ColumnProperty
@@ -8,6 +7,15 @@ from .type import PydanticJSON
 
 
 def flag_pydantic_changes(target):
+	"""Function to be binded on 'before_update' SQLA event for BaseModel.
+
+	Example:
+	>>> from sqlalchemy import event
+	>>> from pydantic import BaseModel
+	>>> @event.listens_for(BaseModel, "before_update")
+	>>> def _(mapper, connection, target) -> None:
+	...     flag_pydantic_changes(target)
+	"""
 	inspector = inspect(target)
 	mapper = inspector.mapper
 
@@ -18,10 +26,7 @@ def flag_pydantic_changes(target):
 		if not isinstance(prop, ColumnProperty):
 			continue
 
-		is_pyd_type = any(
-			isinstance(col.type, PydanticJSON)
-			for col in prop.columns
-		)
+		is_pyd_type = any(isinstance(col.type, PydanticJSON) for col in prop.columns)
 
 		if is_pyd_type:
 			hist = attr.history

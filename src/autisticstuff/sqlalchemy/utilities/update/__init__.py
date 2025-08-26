@@ -2,18 +2,15 @@ from collections.abc import Callable, Coroutine
 from typing import Any
 
 
-__all__ = [
-	"sync_update_with_callback",
-	"update_with_callback"
-]
+__all__ = ["sync_update_with_callback", "update_with_callback"]
+
 
 async def update_with_callback(
 	obj: object | dict[str, Any],
 	data: dict[str, Any],
 	_onupdate: dict[str, Coroutine | tuple[Callable[..., Coroutine], bool]] | None = None,
 ) -> tuple[object | dict, list[str]]:
-	"""
-	Asynchronously updates the attributes of an object if their values differ
+	"""Asynchronously updates the attributes of an object if their values differ
 	from the provided data and tracks the modified attributes.
 
 	Args:
@@ -49,8 +46,7 @@ def sync_update_with_callback(
 	data: dict[str, Any],
 	_onupdate: dict[str, tuple[Callable[..., None], bool]] | None = None,
 ):
-	"""
-	Synchronously updates the attributes of an object if their values differ
+	"""Synchronously updates the attributes of an object if their values differ
 	from the provided data and tracks the modified attributes.
 
 	Args:

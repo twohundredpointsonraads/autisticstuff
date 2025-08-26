@@ -6,14 +6,14 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 if TYPE_CHECKING:
-	from typing import Any # noqa
-	from sqlalchemy import Dialect # noqa
-	from sqlalchemy.sql.type_api import TypeEngine # noqa
+	from typing import Any  # noqa
+	from sqlalchemy import Dialect  # noqa
+	from sqlalchemy.sql.type_api import TypeEngine  # noqa
+
 
 @final
 class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
-	"""
-	A custom SQLAlchemy type decorator for handling Pydantic models as JSON.
+	"""A custom SQLAlchemy type decorator for handling Pydantic models as JSON.
 
 	This class allows storing and retrieving Pydantic models in a database
 	column, with support for PostgreSQL's JSONB type.
@@ -23,11 +23,11 @@ class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
 		postgres_use_jsonb (bool): Whether to use PostgreSQL's JSONB type
 			instead of JSON. Defaults to True.
 	"""
+
 	impl = sa.types.JSON
 
 	def __init__(self, pydantic_type: type["BaseModel"], postgres_use_jsonb: bool = True) -> None:
-		"""
-		Initialize the PydanticJSON type.
+		"""Initialize the PydanticJSON type.
 
 		Args:
 			pydantic_type (type[BaseModel]): The Pydantic model type to be used.
@@ -52,23 +52,22 @@ class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
 
 	@override
 	def process_bind_param(
-			self,
-			value: "BaseModel | None",
-			dialect: "Dialect",
+		self,
+		value: "BaseModel | None",
+		dialect: "Dialect",
 	) -> "dict[str, Any] | None":
 		if value is None:
 			return None
 
 		if not isinstance(value, BaseModel):  # dynamic typing.
-			raise TypeError(f'The value "{value!r}" is not a pydantic model') # noqa
+			raise TypeError(f'The value "{value!r}" is not a pydantic model')  # noqa
 
 		return value.model_dump(mode="json", exclude_unset=True)
 
 	@override
 	def process_result_value(
-			self,
-			value: "dict[str, Any] | None",
-			dialect: "Dialect",
+		self,
+		value: "dict[str, Any] | None",
+		dialect: "Dialect",
 	) -> "BaseModel | None":
 		return self.pydantic_type(**value) if value else None
-
