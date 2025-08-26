@@ -6,7 +6,7 @@ import sys
 import loguru
 from loguru import logger
 
-from . import get_logger
+from .factory import get_logger
 
 
 class InterceptHandler(logging.Handler):

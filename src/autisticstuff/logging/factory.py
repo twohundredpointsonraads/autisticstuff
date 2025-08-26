@@ -1,10 +1,11 @@
 from functools import lru_cache
 
-from loguru import Logger, logger
+import loguru
+from loguru import logger
 
 
 @lru_cache
-def get_logger(logger_name: str | None = None) -> Logger:
+def get_logger(logger_name: str | None = None) -> loguru.Logger:
 	"""Return a cached loguru Logger optionally bound with a humanized name.
 
 	If a name is provided, the returned logger is bound with extra["logger_name"]
@@ -15,7 +16,7 @@ def get_logger(logger_name: str | None = None) -> Logger:
 			return the global logger.
 
 	Returns:
-		Logger: A cached loguru Logger with the extra context bound when name is provided.
+		loguru._logger.Logger: A cached loguru Logger with the extra context bound when name is provided.
 	"""
 	if logger_name is not None:
 		return logger.bind(logger_name=f" {logger_name.replace('.', ' -> ')} ")
