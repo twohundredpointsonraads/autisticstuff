@@ -11,6 +11,8 @@ from typing import Any
 from dotenv import load_dotenv
 import loguru
 
+from autisticstuff.astuff_logs import get_logger
+
 
 @dataclass(init=True, slots=True, frozen=True)
 class SettingsField[T: type]:
@@ -74,7 +76,7 @@ class AppSettings:
 
 		Args:
 			dotenv_path: Optional path to a .env file. If None, python-dotenv searches recursively.
-			logger: Optional logging or loguru logger. Defaults to loguru.logger if not provided.
+			logger: Optional logging or loguru logger. Defaults to autisticstuff.astuff_logs.factory.get_logger("utilities.appsettings") if not provided.
 			explicit_format: If True, attribute names must be uppercase with underscores.
 
 		Raises:
@@ -83,13 +85,12 @@ class AppSettings:
 			ValueError: If a required field (nullable=False, no default/factory) is missing in the environment.
 		"""
 		load_dotenv(dotenv_path=dotenv_path)
-		self._logger: loguru.Logger = loguru.logger if logger is None else logger
+		self._logger: loguru.Logger = get_logger("utilities.appsettings") if logger is None else logger
 		_settings_fields: dict[str, SettingsField] = {}
 		for _attribute in self.__annotations__:
 			_settings_fields[_attribute] = self.__class__.__dict__[_attribute]
 		_attribute_map: list[tuple[str, str]] = []
 		_annotations: dict[str, type] = self.__annotations__
-		print(_annotations, _settings_fields)
 		for _attribute in _settings_fields:
 			if explicit_format and not re.match(r"[A-Z_]", _attribute):
 				raise AttributeError("AppSettings attributes should contain only capital letters and underscores")

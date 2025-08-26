@@ -188,7 +188,7 @@ def get_base_repository(
 	Args:
 		autoimport_mapping: Whether to enable auto-import of the mapping. Defaults to False.
 		from_module: The module to import the mapping from. Required if autoimport_mapping is True.
-		by_name_replace: A tuple specifying the replacement pattern for class names.
+		by_name_replace: A tuple specifying the replacement pattern for class names if autoimport_mapping is True.
 			Defaults to ("Repository", "Mapping").
 
 	Returns:
@@ -214,15 +214,16 @@ def get_base_repository(
 	"""
 	if autoimport_mapping and from_module:
 
-		def _autoimport_on_init_subc(cls, **kwargs):
-			cls.mapping = getattr(
-				__import__(
-					name=from_module,
-					fromlist=[_model := cls.__class__.__name__.replace(*by_name_replace)],
-				),
-				_model,
-			)
+		class _BaseRepo(_BaseRepository):
+			def __init_subclass__(cls) -> None:
+				cls.mapping = getattr(
+					__import__(
+						name=from_module,
+						fromlist=[_model := cls.__class__.__name__.replace(*by_name_replace)],
+					),
+					_model,
+				)
 
-		_BaseRepository.__init_subclass__ = _autoimport_on_init_subc
+		return _BaseRepo
 
 	return _BaseRepository
