@@ -100,10 +100,8 @@ def setup_interception_through_loguru(modules: dict[InterceptionPreset | tuple[s
 		modules: Mapping between a preset (or tuple of logger names) and the minimal Level.
 	"""
 	logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-	[
+	for module, lvl in modules.items():
 		_register_interception(logger_name=(module if isinstance(module, str) else module.value), level=lvl)
-		for module, lvl in modules.items()
-	]
 
 
 def set_logger_factory_for_interception(factory: Callable[[str], logging.Logger | loguru.Logger]) -> None:
