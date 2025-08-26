@@ -1,0 +1,24 @@
+{
+	"sqltools.connections": [
+		{
+			"previewLimit": 50,
+			"server": "localhost",
+			"port": 5432,
+			"driver": "PostgreSQL",
+			"name": "а у ",
+			"database": "alrdev",
+			"username": "alrdev",
+			"password": "alrdev"
+		},
+		{
+			"previewLimit": 50,
+			"server": "localhost",
+			"port": 5432,
+			"driver": "PostgreSQL",
+			"name": "test",
+			"database": "test",
+			"username": "test",
+			"password": "test"
+		}
+	]
+}
