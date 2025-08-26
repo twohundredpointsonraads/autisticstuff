@@ -9,3 +9,6 @@ publish:
 
 build:
 	uv build -o dist/
+
+lint:
+	uvx ruff check --fix --unsafe-fixes -e && ruff format

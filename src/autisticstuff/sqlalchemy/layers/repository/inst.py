@@ -5,7 +5,7 @@ import uuid
 import sqlalchemy
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import InstrumentedAttribute, selectinload
 
 from autisticstuff.sqlalchemy.utilities.validate import validate_kwargs_for_model
 
@@ -13,8 +13,7 @@ from ..mapping.inst import _BaseMapping
 
 
 class _BaseRepository:
-	"""
-	Base repository class providing common database operations.
+	"""Base repository class providing common database operations.
 
 	This class implements the repository pattern for SQLAlchemy models,
 	providing a consistent interface for CRUD operations and query building.
@@ -23,11 +22,11 @@ class _BaseRepository:
 		mapping: The SQLAlchemy model class this repository operates on
 		session: The async database session
 	"""
+
 	mapping: _BaseMapping
 
 	def __init__(self, session: AsyncSession) -> None:
-		"""
-		Initialize the repository with a database session.
+		"""Initialize the repository with a database session.
 
 		Args:
 			session: SQLAlchemy async session for database operations
@@ -39,9 +38,8 @@ class _BaseRepository:
 		obj_id: Any,
 		eager_load: list[str] | None = None,
 		key: str | list[str] = "id",
-	)-> Coroutine[Any, Any, _BaseMapping | None]:
-		"""
-		Retrieve a single object by its primary key or composite key.
+	) -> Coroutine[Any, Any, _BaseMapping | None]:
+		"""Retrieve a single object by its primary key or composite key.
 
 		Args:
 			obj_id: The primary key value(s). For composite keys, pass a tuple
@@ -56,15 +54,14 @@ class _BaseRepository:
 			if not hasattr(self.mapping, key):
 				raise KeyError(f"model {self.mapping.__name__} has no attr {key}")
 
-			if not isinstance(obj_id, getattr(self.mapping, key).type.python_type):
+			instr_attr: InstrumentedAttribute = getattr(self.mapping, key)
+			if not isinstance(obj_id, instr_attr.type.python_type):
 				raise TypeError(f"obj_id is not an instance of {key} col type")
-			
+
 			query = query.where(getattr(self.mapping, key) == obj_id)
 		else:
 			if not isinstance(obj_id, tuple) or len(obj_id) != len(key):
-				raise ValueError(
-					f"obj_id should be a tuple with {len(key)} elements for composite key"
-				)
+				raise ValueError(f"obj_id should be a tuple with {len(key)} elements for composite key")
 
 			conditions = []
 			for k, v in zip(key, obj_id, strict=False):
@@ -83,11 +80,8 @@ class _BaseRepository:
 		result = await self.session.execute(query)
 		return result.scalars().first()
 
-	async def delete_by_id(
-		self, obj_id: int | uuid.UUID | tuple, key: str | list[str] = "id"
-	) -> bool:
-		"""
-		Delete an object by its primary key.
+	async def delete_by_id(self, obj_id: int | uuid.UUID | tuple, key: str | list[str] = "id") -> bool:
+		"""Delete an object by its primary key.
 
 		Args:
 			obj_id: The primary key value(s) to delete
@@ -108,8 +102,7 @@ class _BaseRepository:
 		pair: tuple[str, Any] | None = None,
 		opt_args: Iterable[tuple[Any, Any]] | None = None,
 	) -> int | None:
-		"""
-		Count records matching optional criteria.
+		"""Count records matching optional criteria.
 
 		Args:
 			pair: Optional tuple of (column_name, value) for filtering
@@ -129,15 +122,14 @@ class _BaseRepository:
 		return (await self.session.execute(stmt)).scalar_one_or_none()
 
 	async def create_instance(self, *_, **kwargs) -> Any:
-		"""
-		Args:
+		"""Args:
 			**kwargs: Field values for the new instance
 
 		Returns:
 			The created and refreshed model instance
 		"""
 		validate_kwargs_for_model(self.mapping, kwargs)
-		instance = self.mapping(**kwargs) # noqa
+		instance = self.mapping(**kwargs)  # noqa
 		self.session.add(instance)
 		await self.session.commit()
 		await self.session.refresh(instance)
@@ -151,8 +143,7 @@ class _BaseRepository:
 		opt_args: Iterable[tuple[Any, Any]] | None = None,
 		unique: bool = False,
 	) -> Coroutine[Any, Any, list[_BaseMapping] | None]:
-		"""
-		Retrieve multiple records with optional filtering, pagination, and uniqueness.
+		"""Retrieve multiple records with optional filtering, pagination, and uniqueness.
 
 		Args:
 			page: Page number for pagination (0-based)
@@ -184,9 +175,12 @@ class _BaseRepository:
 		return result.all()
 
 
-def get_base_repository(autoimport_mapping: bool = False, from_module: str | None = None, by_name_replace: tuple[str, str] = ("Repository", "Mapping")) -> _BaseRepository:
-	"""
-	Factory function to create a base repository class with optional auto-import functionality.
+def get_base_repository(
+	autoimport_mapping: bool = False,
+	from_module: str | None = None,
+	by_name_replace: tuple[str, str] = ("Repository", "Mapping"),
+) -> _BaseRepository:
+	"""Factory function to create a base repository class with optional auto-import functionality.
 
 	This factory allows you to create repository base classes that can automatically
 	import their corresponding model mappings based on naming conventions.
@@ -214,14 +208,12 @@ def get_base_repository(autoimport_mapping: bool = False, from_module: str | Non
 		...     mapping = User
 
 		>>> # Auto-import mapping
-		>>> BaseRepo = get_base_repository(
-		...     autoimport_mapping=True,
-		...     from_module="myapp.models"
-		... )
+		>>> BaseRepo = get_base_repository(autoimport_mapping=True, from_module="myapp.models")
 		>>> class UserRepository(BaseRepo):  # Will auto-import UserMapping
 		...     pass
 	"""
 	if autoimport_mapping and from_module:
+
 		def _autoimport_on_init_subc(cls, **kwargs):
 			cls.mapping = getattr(
 				__import__(
