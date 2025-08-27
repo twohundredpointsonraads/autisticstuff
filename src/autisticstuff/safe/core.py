@@ -8,6 +8,14 @@ from autisticstuff.logs import get_logger
 _logger = get_logger("aiohttp.retry_with_backoff")
 
 
+async def retry_with_backoff(
+	func: Callable,
+	*args,
+	max_retries: int,
+	delay: float,
+	backoff_factor: float = 2.0,
+	exceptions: tuple = (Exception,),
+	**kwargs,
 ) -> Any:
 	"""
 	Executes an asynchronous function with retry logic and exponential backoff.
