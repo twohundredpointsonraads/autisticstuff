@@ -71,6 +71,8 @@ async def exception_handler(request: Request, exception: Exception) -> starlette
 			delete_cookie_func = getattr(request.app.state, "delete_cookie_func", _ph_delete_auth_cookie)
 			delete_cookie_func(response)
 
+	return response
+
 
 def apply_exception_handler(
 	app: fastapi.FastAPI, delete_cookie_func: Callable[[fastapi.Response], None] = _ph_delete_auth_cookie
