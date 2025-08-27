@@ -20,28 +20,7 @@ nav:
       - API Reference: reference/index.md
   - Changelog: changelog.md
 
-theme:
-  name: material
-  language: en
-  logo: images/logo.svg
-  favicon: images/favicon.png
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: indigo
-  features:
-    - navigation.expand
-    - navigation.sections
-    - navigation.top
-    - toc.integrate
-    - content.code.copy
-    - content.code.annotate
-    - content.tabs.link
+theme: mkdocs
 
 plugins:
   - search
