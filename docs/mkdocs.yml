@@ -20,21 +20,39 @@ nav:
       - API Reference: reference/index.md
   - Changelog: changelog.md
 
-theme: mkdocs
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+  features:
+    - navigation.expand
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
 
 plugins:
   - search
-  # Uncomment mkdocstrings for Python API docs (requires: pip install mkdocstrings[python])
-  # - mkdocstrings:
-  #     default_handler: python
-  #     handlers:
-  #       python:
-  #         paths: ["."]
-  #         options:
-  #           show_source: true
-  #           show_signature: true
-  #           separate_signature: true
-  #           members_order: alphabetical
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+       python:
+          paths: ["."]
+          options:
+            show_source: true
+            show_signature: true
+            separate_signature: true
+            members_order: alphabetical
 
 markdown_extensions:
   - admonition
@@ -51,10 +69,9 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.superfences
   - pymdownx.details
-  # For emoji below, mkdocs-material must be installed
-  # - pymdownx.emoji:
-    #   emoji_generator: !!python/name:materialx.emoji.to_svg
-    #   emoji_index: !!python/name:materialx.emoji.twemoji
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:materialx.emoji.twemoji
 
 extra:
   social:
