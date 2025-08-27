@@ -45,10 +45,17 @@ class EnsureValidRoles:
 	_GET_USER_DEPENDENCY: Callable[..., Any] = _raise_ni_error
 	_ROLES_ATTR: str = "roles"
 
-	def __init__(self, *roles: list[str | StrEnum]):
+	def __init__(self, *roles: str | StrEnum):
 		self.roles = frozenset(roles)
 
 	async def __call__(self, user: Any = Depends(_GET_USER_DEPENDENCY)) -> Any:
-		if not self.roles.issubset(frozenset(user.roles)):
+		roles_attr = getattr(user, self._ROLES_ATTR, None)
+		if roles_attr is None or isinstance(roles_attr, str):
+			raise self._TO_RAISE(f"user object does not have a valid iterable '{self._ROLES_ATTR}' attribute")
+		try:
+			user_roles = frozenset(roles_attr)
+		except TypeError:
+			raise self._TO_RAISE(f"user '{self._ROLES_ATTR}' attribute is not iterable")
+		if not self.roles.issubset(user_roles):
 			raise self._TO_RAISE("user does not have required roles")
 		return user

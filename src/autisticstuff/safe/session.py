@@ -6,12 +6,30 @@ from .core import retry_with_backoff
 
 
 class RetryableClientSession:
+	"""
+	An asynchronous HTTP client session wrapper that adds automatic retry logic with backoff.
+
+	This class wraps an aiohttp.ClientSession and provides methods for making HTTP requests
+	(GET, POST, PUT, DELETE, PATCH) with configurable retry behavior on network errors or timeouts.
+
+	Usage:
+	    async with RetryableClientSession(max_retries=3, timeout=10) as session:
+	        response = await session.get("https://example.com")
+	"""
 	def __init__(
 		self,
 		max_retries: int,
 		timeout: int,
 		**session_kwargs,
 	):
+		"""
+		Initialize a RetryableClientSession.
+
+		Args:
+		    max_retries (int): The maximum number of retry attempts for failed requests.
+		    timeout (int): The total timeout (in seconds) for each request.
+		    **session_kwargs: Additional keyword arguments passed to aiohttp.ClientSession.
+		"""
 		self.max_retries = max_retries
 		self.timeout = aiohttp.ClientTimeout(total=timeout)
 		self.session_kwargs = session_kwargs
