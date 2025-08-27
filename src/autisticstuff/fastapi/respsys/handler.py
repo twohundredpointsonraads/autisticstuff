@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from contextlib import suppress
 
 import fastapi
@@ -12,10 +13,11 @@ from .exceptions import APIException
 from .schemas.response import ErrorSO, ResponseSO
 
 
-async def exception_handler(request: Request, exception: Exception) -> starlette.responses.JSONResponse:
-	def delete_auth_cookie():
-		get_logger("exchandler").critical("DELETE AUTH COOKIE METHOD IS UNIMPLEMENTED!")
+def _ph_delete_auth_cookie(_):
+	get_logger("exchandler").critical("DELETE AUTH COOKIE METHOD IS UNIMPLEMENTED!")
 
+
+async def exception_handler(request: Request, exception: Exception) -> starlette.responses.JSONResponse:
 	status_code = fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR
 
 	if isinstance(exception, APIException):
@@ -60,18 +62,21 @@ async def exception_handler(request: Request, exception: Exception) -> starlette
 		content=ResponseSO(payload=None, error=error).model_dump(mode="json", fallback=str),
 		status_code=status_code,
 	)
-
 	if status_code == HTTP_401_UNAUTHORIZED:
 		"""
-		Override delete_auth_cookie as an attribute of exception_handler
+		Call the delete cookie function attached to the app state (fallback to placeholder).
 		"""
 
-		delete_auth_cookie(response)
+		with suppress(Exception):
+			delete_cookie_func = getattr(request.app.state, "delete_cookie_func", _ph_delete_auth_cookie)
+			delete_cookie_func(response)
 
-	return response
 
+def apply_exception_handler(
+	app: fastapi.FastAPI, delete_cookie_func: Callable[[fastapi.Response], None] = _ph_delete_auth_cookie
+):
+	app.state.delete_cookie_func = delete_cookie_func
 
-def apply_exception_handler(app: fastapi.FastAPI):
 	app.add_exception_handler(exc_class_or_status_code=Exception, handler=exception_handler)
 
 	app.add_exception_handler(exc_class_or_status_code=APIException, handler=exception_handler)
