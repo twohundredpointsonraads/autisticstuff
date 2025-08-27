@@ -6,8 +6,8 @@ repo_url: https://github.com/twohundredpointsonraads/autisticstuff
 repo_name: twohundredpointsonraads/autisticstuff
 edit_uri: edit/main/docs/
 
-docs_dir: docs
-site_dir: site
+docs_dir: .
+site_dir: ../site
 strict: false
 
 nav:
