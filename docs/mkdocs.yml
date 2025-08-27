@@ -78,11 +78,3 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/twohundredpointsonraads/autisticstuff
   generator: false
-
-extra_css:
-  - stylesheets/extra.css
-extra_javascript:
-  - javascripts/extra.js
-
-watch:
-  - overrides
