@@ -12,7 +12,7 @@ async def retry_with_backoff(
 	func: Callable,
 	*args,
 	max_retries: int,
-	delay: float,
+	delay: float = 1.0,
 	backoff_factor: float = 2.0,
 	exceptions: tuple = (Exception,),
 	**kwargs,
