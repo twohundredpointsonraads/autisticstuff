@@ -32,8 +32,9 @@ def validate_kwargs_for_model(model: DeclarativeBase, kwargs: dict[str, Any]):
 	:raises TypeError: if model is not a child non-abstract instance of sqlalchemy.DeclarativeBase
 	:raises KeyError: if required columns for model creation are not specified
 	"""
-	if not issubclass(model, DeclarativeBase) or (hasattr(model, "__abstract__") and model.__abstract__):
-		raise TypeError(f"{type(model)} should be a child non-abstract instance of sqlalchemy.DeclarativeBase")
+	# FIXME(plassstic):
+	# if not issubclass(model, DeclarativeBase) or (hasattr(model, "__abstract__") and model.__abstract__):
+	# 	raise TypeError(f"{type(model)} should be a child non-abstract instance of sqlalchemy.DeclarativeBase")
 	required = _extract_primary_keys(model) | _extract_not_nullable_without_default(model)
 	required = {c.name for c in required}
 	if not required.issubset(set(kwargs.keys())):
