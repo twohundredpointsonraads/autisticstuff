@@ -1,6 +1,6 @@
 [project]
 name = "autisticstuff"
-version = "0.1.3b3"
+version = "0.1.3b4"
 description = "Autistic stuff, either created by us, or stolen from someone on the internet"
 readme = "README.md"
 authors = [
