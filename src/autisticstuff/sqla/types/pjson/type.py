@@ -72,3 +72,8 @@ class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
 		dialect: "Dialect",
 	) -> "BaseModel | None":
 		return self.pydantic_type(**value) if value else None
+
+	@override
+	@property
+	def python_type(self) -> BaseModel:
+		return self.pydantic_type
