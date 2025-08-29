@@ -7,11 +7,15 @@ from sqlalchemy.orm import DeclarativeBase
 __all__ = ["validate_kwargs_for_model"]
 
 
+def _has_no_default_or_automatic_value(c: Column) -> bool:
+	return c.default is None and c.server_default is None and (c.type.python_type is not int or not c.autoincrement)
+
+
 def _extract_primary_keys(model: DeclarativeBase) -> set[Column]:
 	return {
 		c
 		for c in model.__table__.columns
-		if hasattr(c, "primary_key") and c.default is None and c.server_default is None and c.primary_key
+		if hasattr(c, "primary_key") and _has_no_default_or_automatic_value(c) and c.primary_key
 	}
 
 
@@ -19,7 +23,7 @@ def _extract_not_nullable_without_default(model: DeclarativeBase) -> set[Column]
 	return {
 		c
 		for c in model.__table__.columns
-		if hasattr(c, "nullable") and c.default is None and c.server_default is None and not c.nullable
+		if hasattr(c, "nullable") and _has_no_default_or_automatic_value(c) and not c.nullable
 	}
 
 
