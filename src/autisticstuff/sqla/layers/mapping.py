@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import func, inspect, MetaData
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -27,6 +28,7 @@ class _BaseMapping(DeclarativeBase):
 	created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 	updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 	is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+	extra: Mapped[dict] = mapped_column(JSONB(), nullable=False, default={})
 
 	def to_dict(self, **kw) -> dict[str, Any]:
 		"""Convert the model instance to a dictionary representation.
