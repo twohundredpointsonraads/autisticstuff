@@ -56,7 +56,8 @@ async def safe_send_message_with_retry(
 	max_retries: int = 3,
 	**kwargs,
 ) -> Message:
-	chat_id = event.from_user.id
+	msg = event.message
+	chat_id = msg.chat.id
 
 	async def _send_message():
 		try:
