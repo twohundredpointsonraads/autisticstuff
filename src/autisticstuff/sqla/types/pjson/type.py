@@ -63,7 +63,7 @@ class PydanticJSON(sa.types.TypeDecorator["BaseModel"]):
 		if not isinstance(value, BaseModel):  # dynamic typing.
 			raise TypeError(f'The value "{value!r}" is not a pydantic model')  # noqa
 
-		return value.model_dump(mode="json", exclude_unset=True)
+		return value.model_dump(mode="json")
 
 	@override
 	def process_result_value(
