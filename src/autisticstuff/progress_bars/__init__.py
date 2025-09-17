@@ -1,3 +1,3 @@
 from .enums import Styles
 
-__all__ = [Styles]
+__all__ = ['Styles']
